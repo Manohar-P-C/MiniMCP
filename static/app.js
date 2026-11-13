@@ -128,7 +128,8 @@
     });
     toolGrid.innerHTML = "";
     if (res.status !== 200 || !res.data || !res.data.result) {
-      toolGrid.innerHTML = '<div class="empty">Unable to load tools (' + (res.data && res.data.error ? res.data.error.message : res.status) + ").</div>";
+      const errMsg = (res.data && res.data.error && res.data.error.message) || res.status || "unknown error";
+    toolGrid.innerHTML = '<div class="empty">Unable to load tools (' + errMsg + ").</div>";
       toolCountBadge.textContent = "-";
       return;
     }
@@ -237,11 +238,11 @@
       } else {
         body = renderJson(payload);
       }
-      toolResult.innerHTML = `<div class="result-title"><span style="color:var(--success)">&#10003;</span> OK</div><pre>${escapeHtml(body)}</pre>`;
+      toolResult.innerHTML = `<div class="result-title"><span style="color:var(--success)">&#10003;</span> OK</div><pre>${escapeHtml(String(body))}</pre>`;
     } else {
       const msg = payload && payload.message ? payload.message : renderJson(payload);
       const code = payload && payload.code != null ? " (code " + payload.code + ")" : "";
-      toolResult.innerHTML = `<div class="result-title"><span style="color:var(--danger)">&#10007;</span> Error${escapeHtml(code)}</div><pre>${escapeHtml(msg)}</pre>`;
+      toolResult.innerHTML = `<div class="result-title"><span style="color:var(--danger)">&#10007;</span> Error${escapeHtml(code)}</div><pre>${escapeHtml(String(msg))}</pre>`;
     }
     toolResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -290,7 +291,7 @@
   });
 
   clearRpcBtn.addEventListener("click", () => {
-    rpcResponse.textContent = "Response will appear here&hellip;";
+    rpcResponse.innerHTML = "Response will appear here&hellip;";
   });
 
   sendRpcBtn.addEventListener("click", async () => {
@@ -311,7 +312,7 @@
         return;
       }
       const res = await request(payload);
-      rpcResponse.textContent = renderJson(res.data || { _status: res.status, _note: "empty response" });
+      rpcResponse.innerHTML = renderJson(res.data || { _status: res.status, _note: "empty response" });
     } catch (e) {
       rpcResponse.textContent = "Request failed: " + (e.message || String(e));
     } finally {
@@ -322,14 +323,15 @@
 
   // ---------- Server information ----------
   async function loadServerInfo() {
-    const res = await request({
+    // Complete the MCP lifecycle: initialize -> initialized notification
+    const initRes = await request({
       jsonrpc: "2.0",
       id: Date.now(),
       method: "initialize",
       params: { protocolVersion: "2025-03-26" },
     });
-    if (res.status === 200 && res.data && res.data.result) {
-      const r = res.data.result;
+    if (initRes.status === 200 && initRes.data && initRes.data.result) {
+      const r = initRes.data.result;
       const si = r.serverInfo || {};
       infoName.textContent = si.name || "-";
       infoVersion.textContent = si.version || "-";
@@ -337,6 +339,9 @@
       infoCapabilities.textContent = renderJson(r.capabilities || {});
       protocolVersionEl.textContent = r.protocolVersion || "-";
       serverNameEl.textContent = si.name || "-";
+
+      // Send initialized notification (no response expected)
+      await request({ jsonrpc: "2.0", method: "initialized" });
     } else {
       infoName.textContent = "-";
       infoVersion.textContent = "-";
@@ -346,13 +351,15 @@
   }
 
   // ---------- Bootstrap ----------
-  refreshBtn.addEventListener("click", async () => {
+  async function bootstrap() {
     await loadHealth();
-    await loadTools();
-    await loadServerInfo();
+    await loadServerInfo();  // initializes session first
+    await loadTools();       // then tools/list works
+  }
+
+  refreshBtn.addEventListener("click", async () => {
+    await bootstrap();
   });
 
-  loadHealth();
-  loadTools();
-  loadServerInfo();
+  bootstrap();
 })();
