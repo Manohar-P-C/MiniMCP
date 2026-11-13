@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: minimcp
+    env: python
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn -w 4 -b 0.0.0.0:$PORT app:app"
+    envVars:
+      - key: MINIMCP_PROTOCOL_VERSION
+        value: "2025-03-26"
+      - key: MINIMCP_SERVER_NAME
+        value: "MiniMCP"
+      - key: MINIMCP_SERVER_VERSION
+        value: "1.0.0"
+      - key: MINIMCP_AUTH_TOKEN
+        sync: false
+      - key: MINIMCP_CORS_ORIGINS
+        value: "*"
+      - key: MINIMCP_LOG_LEVEL
+        value: "INFO"

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniMCP Developer Playground</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div class="brand-word">Mini<span>MCP</span></div>
+      </div>
+      <div class="meta">
+        <div class="chip status-chip" id="statusChip">
+          <span class="dot"></span>
+          <span id="statusText">checking&hellip;</span>
+        </div>
+        <div class="chip"><strong>Protocol:</strong> <span id="protocolVersion">-</span></div>
+        <div class="chip"><strong>Server:</strong> <span id="serverName">MiniMCP</span></div>
+      </div>
+      <div class="actions">
+        <label class="token-field">
+          <span>Bearer token</span>
+          <input type="password" id="tokenInput" placeholder="token" autocomplete="off">
+        </label>
+        <button class="btn btn-primary" id="refreshBtn">Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Overview -->
+    <section class="card overview">
+      <h2>Overview</h2>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-value" id="statTools">-</span>
+          <span class="stat-label">registered tools</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="statStatus">-</span>
+          <span class="stat-label">health</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="statTransport">-</span>
+          <span class="stat-label">transport</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="statVersion">-</span>
+          <span class="stat-label">server version</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tool Explorer -->
+    <section class="card tool-explorer">
+      <div class="card-header">
+        <h2>Tool Explorer</h2>
+        <p class="sub">Discover and execute tools via <code>tools/list</code> and <code>tools/call</code>.</p>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="toolFilter" placeholder="Filter tools&hellip;">
+        <span id="toolCountBadge" class="badge">0 tools</span>
+      </div>
+      <div id="toolGrid" class="tool-grid">
+        <div class="empty">Loading tools&hellip;</div>
+      </div>
+      <div id="toolResult" class="result-panel hidden"></div>
+    </section>
+
+    <!-- JSON-RPC Console -->
+    <section class="card console">
+      <div class="card-header">
+        <h2>JSON-RPC Console</h2>
+        <p class="sub">Send raw JSON-RPC 2.0 requests to <code>POST /mcp</code>.</p>
+      </div>
+      <div class="console-body">
+        <div class="pane">
+          <label>Request</label>
+          <textarea id="rpcRequest" placeholder='{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/list"
+}'>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/list"
+}</textarea>
+          <div class="examples">
+            <span class="label">Examples:</span>
+            <button class="example-btn" data-example="list">tools/list</button>
+            <button class="example-btn" data-example="call">tools/call (add)</button>
+            <button class="example-btn" data-example="init">initialize</button>
+            <button class="example-btn" data-example="ping">ping</button>
+            <button class="example-btn" data-example="bad">invalid JSON-RPC</button>
+          </div>
+        </div>
+        <div class="pane actions">
+          <button class="btn btn-primary" id="sendRpcBtn">Send request</button>
+          <button class="btn btn-outline" id="clearRpcBtn">Clear</button>
+        </div>
+        <div class="pane">
+          <label>Response</label>
+          <pre id="rpcResponse">Response will appear here&hellip;</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Server Information -->
+    <section class="card server-info">
+      <h2>Server Information</h2>
+      <div class="info-list">
+        <div class="info-item"><span class="info-key">Name</span><span class="info-value" id="infoName">-</span></div>
+        <div class="info-item"><span class="info-key">Version</span><span class="info-value" id="infoVersion">-</span></div>
+        <div class="info-item"><span class="info-key">Protocol version</span><span class="info-value" id="infoProtocol">-</span></div>
+        <div class="info-item"><span class="info-key">Capabilities</span><span class="info-value" id="infoCapabilities">-</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    MiniMCP &middot; Built from scratch without the official MCP SDK &middot; <a href="#" target="_blank" rel="noopener">README</a>
+  </footer>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
